@@ -8,7 +8,7 @@ output:
     toc: yes
     highlight: textmate
     theme: cosmo
-    toc_depth: 3
+    toc_depth: 4
     toc_float: yes
 editor_options: 
   chunk_output_type: console
@@ -57,11 +57,8 @@ time ~ rx + age + sex 선형 회귀 실행 후 Table 로 나타내어라. (`jsta
 library(survival)
 #colon
 res.reg <- glm(time ~ rx + age + sex, data=colon)
-
 tb.reg <- glmshow.display(res.reg)
-
 knitr::kable(tb.reg$table,caption = tb.reg$first.line)
-
 ```
 ### 로지스틱
 
@@ -71,20 +68,35 @@ status ~ rx + age + sex 로지스틱 회귀 실행 후 Table 로 나타내어라
 library(survival)
 #colon
 res.logistic <- glm(status ~ rx + age + sex, data=colon, family = binomial)
-
 tb.logistic <- glmshow.display(res.logistic)
-
-knitr::kable(res.logistic$table,caption = res.logistic$first.line)
-
+knitr::kable(tb.logistic$table,caption = tb.logistic$first.line)
 ```
 
 
 ### 생존분석
 
-You can also embed plots, for example:
+#### Cox
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+Surv(time,status) ~ rx + age + sex 실행 후 Table 로 나타내어라 (`jstable::cox2.display` 이용)
+
+```{r}
+library(survival)
+res.cox <- coxph(Surv(time,status) ~ rx + age + sex, data=colon, model=T)
+tb.cox <- cox2.display(res.cox)
+knitr::kable(tb.cox$table,caption = tb.cox$caption)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#### kaplan-meier
+
+Surv(time,status) ~ rx 실행 후 그림으로 나타내어라 (jskm::jskm` 이용)
+
+```{r}
+#install.packages("jskm")
+res.km <- survfit(Surv(time,status) ~ rx, data=colon)
+jskm::jskm(res.km,table=T, pval=T, label.nrisk = "No. at risk", size.label.nrisk = 8,
+           xlabs = "Time(Day)",ylabs = "Survival",ystratalabs = c("Obs","Lev","Lev + 5FU"),ystrataname = "rx",
+           marks = F, timeby = 365, xlims = c(0,3000),ylims = c(0.25,1),showpercent = T)
+
+
+```
+
